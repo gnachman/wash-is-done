@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A6389D27232F5274003E0661 /* washdone.m4a in Resources */ = {isa = PBXBuildFile; fileRef = A6389D26232F5274003E0661 /* washdone.m4a */; };
+		A6389D29232F5BD3003E0661 /* happy.jpg in Resources */ = {isa = PBXBuildFile; fileRef = A6389D28232F5BD3003E0661 /* happy.jpg */; };
+		A6389D2B232F6194003E0661 /* lowbattery.m4a in Resources */ = {isa = PBXBuildFile; fileRef = A6389D2A232F6194003E0661 /* lowbattery.m4a */; };
 		EF140AE122C3E76C0079D5FD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF140AE322C3E76C0079D5FD /* Main.storyboard */; };
 		EF7009141C3ED07100E75ECF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF7009131C3ED07100E75ECF /* AppDelegate.swift */; };
 		EF7009161C3ED07100E75ECF /* SpectralViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF7009151C3ED07100E75ECF /* SpectralViewController.swift */; };
@@ -20,6 +23,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A6389D26232F5274003E0661 /* washdone.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = washdone.m4a; sourceTree = "<group>"; };
+		A6389D28232F5BD3003E0661 /* happy.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = happy.jpg; sourceTree = "<group>"; };
+		A6389D2A232F6194003E0661 /* lowbattery.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = lowbattery.m4a; sourceTree = "<group>"; };
 		EF140AE222C3E76C0079D5FD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		EF7009101C3ED07100E75ECF /* TempiFFT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TempiFFT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EF7009131C3ED07100E75ECF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -64,6 +70,9 @@
 		EF7009121C3ED07100E75ECF /* TempiFFT */ = {
 			isa = PBXGroup;
 			children = (
+				A6389D2A232F6194003E0661 /* lowbattery.m4a */,
+				A6389D28232F5BD3003E0661 /* happy.jpg */,
+				A6389D26232F5274003E0661 /* washdone.m4a */,
 				EF7009131C3ED07100E75ECF /* AppDelegate.swift */,
 				EF7009151C3ED07100E75ECF /* SpectralViewController.swift */,
 				EF7009291C3EDFB900E75ECF /* TempiAudioInput.swift */,
@@ -111,7 +120,7 @@
 				TargetAttributes = {
 					EF70090F1C3ED07100E75ECF = {
 						CreatedOnToolsVersion = 7.2;
-						DevelopmentTeam = V46VL48CWC;
+						DevelopmentTeam = H7V7XYVQ7D;
 						LastSwiftMigration = 1020;
 					};
 				};
@@ -140,8 +149,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				EF140AE122C3E76C0079D5FD /* Main.storyboard in Resources */,
+				A6389D27232F5274003E0661 /* washdone.m4a in Resources */,
 				EF70091E1C3ED07100E75ECF /* LaunchScreen.storyboard in Resources */,
+				A6389D29232F5BD3003E0661 /* happy.jpg in Resources */,
 				EF70091B1C3ED07100E75ECF /* Assets.xcassets in Resources */,
+				A6389D2B232F6194003E0661 /* lowbattery.m4a in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -290,7 +302,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = V46VL48CWC;
+				DEVELOPMENT_TEAM = H7V7XYVQ7D;
 				INFOPLIST_FILE = TempiFFT/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -304,7 +316,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = V46VL48CWC;
+				DEVELOPMENT_TEAM = H7V7XYVQ7D;
 				INFOPLIST_FILE = TempiFFT/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
