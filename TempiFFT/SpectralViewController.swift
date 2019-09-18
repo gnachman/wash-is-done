@@ -62,6 +62,33 @@ class Recorder {
         }
     }
 
+    public func matches(_ other: [Int]) -> Bool {
+        let score = levenshtein(other)
+        var save = true
+        if let current = UserDefaults.standard.object(forKey: "best") as? NSNumber {
+            save = score < current.intValue
+        }
+        if save {
+            print("save it")
+            UserDefaults.standard.set(score, forKey: "best")
+            UserDefaults.standard.set(buffer, forKey: "buffer")
+        }
+        return score < 80
+    }
+
+    public func difference(_ other: [Int]) -> Int {
+        if other.count != buffer.count {
+            return Int.max
+        }
+        var sum = 0
+        for (x, y) in zip(buffer, other) {
+            sum += abs(x-y)
+        }
+        print(sum)
+        return sum
+    }
+
+    // Threshold is 80
     public func levenshtein(_ other: [Int]) -> Int {
         let sCount = buffer.count
         let oCount = other.count
@@ -113,7 +140,23 @@ class SpectralViewController: UIViewController {
     var unpluggedCount = 0
 
     var audioInput: TempiAudioInput!
-    static let pattern = [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 17, 17, 17, 17, 16, 16, 16,
+
+    // Recorded in real life, 9/17/19
+    static let pattern = [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 17, 17, 17, 17, 17,
+                          16, 16, 16, 16, 33, 33, 33, 33, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+                          12, 12, 12, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 11, 11, 11, 11, 11, 11,
+                          12, 12, 12, 33, 33, 33, 33, 7, 7, 7, 7, 7, 9, 9, 9, 9, 11, 11, 11, 11, 11,
+                          9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+                          12, 12, 12, 12, 12, 12, 12, 12, 12, 3, 12, 12, 12, 12, 12, 12, 17, 17, 17,
+                          2, 6, 16, 16, 16, 16, 33, 33, 33, 33, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+                          12, 12, 12, 12, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                          17, 17, 17, 17, 19, 19, 19, 19, 17, 17, 17, 17, 16, 16, 16, 16, 16, 33,
+                          33, 33, 33, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                          17, 17, 17, 17, 17, 17]
+
+    // Captured from https://www.youtube.com/watch?v=clHpyRzb1PI
+    /*
+        [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 17, 17, 17, 17, 16, 16, 16,
                           16, 14, 14, 14, 14, 14, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,  9,  9,
                           9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 11, 11, 11, 11, 11, 11, 12, 12,
                           14, 14, 14, 14, 14,  7,  7,  7,  7,  9,  9,  9,  9, 10, 11, 11, 11, 11,  9,  9,
@@ -123,6 +166,7 @@ class SpectralViewController: UIViewController {
                           12, 12, 12, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
                           31, 19, 19, 19, 17, 17, 17, 17, 17, 16, 16, 16, 14, 14, 14, 14, 14, 14, 16, 16,
                           14, 16, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17]
+     */
 
     private func patternFound() {
         playForever("washdone")
@@ -159,9 +203,7 @@ class SpectralViewController: UIViewController {
                                       maxFrequency: c0 * Float(pow(2.0, Float(highestOctave))),
                                       bandsPerOctave: 12)
         recorder.append(fft.dominantBand)
-        let distance = recorder.levenshtein(SpectralViewController.pattern)
-        label.text = "\(distance)"
-        if distance < 80 {
+        if recorder.matches(SpectralViewController.pattern) {
             patternFound()
         }
     }
@@ -185,7 +227,12 @@ class SpectralViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
+        if let best = UserDefaults.standard.value(forKey: "best") as? NSNumber,
+            let bestBuffer = UserDefaults.standard.value(forKey: "buffer") as? [NSNumber] {
+            print("Best=\(best), buffer=\(bestBuffer)")
+        }
+
         let audioInputCallback: TempiAudioInputCallback = { (timeStamp, numberOfFrames, samples) -> Void in
             self.gotSomeAudio(timeStamp: Double(timeStamp), numberOfFrames: Int(numberOfFrames), samples: samples)
         }
