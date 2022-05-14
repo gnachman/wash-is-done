@@ -222,7 +222,7 @@ class SpectralViewController: UIViewController {
                                       maxFrequency: c0 * Float(pow(2.0, Float(highestOctave))),
                                       bandsPerOctave: 12)
         recorder.append(fft.dominantBand)
-        if let max = samples.max(), max < 0.02 {
+        if let max = samples.max(), max < 0.001 {
             spectralView.note = ""
         } else {
             spectralView.note = name(fft.dominantBand + 12*4 + 9)
