@@ -62,7 +62,9 @@ class Recorder {
         }
     }
 
-    public func matches(_ other: [Int]) -> Bool {
+    public let acceptableScore = 80
+
+    public func matches(_ other: [Int]) -> (Bool, Int) {
         let score = levenshtein(other)
         var save = true
         if let current = UserDefaults.standard.object(forKey: "best") as? NSNumber {
@@ -73,7 +75,7 @@ class Recorder {
             UserDefaults.standard.set(score, forKey: "best")
             UserDefaults.standard.set(buffer, forKey: "buffer")
         }
-        return score < 80
+        return (score < acceptableScore, score)
     }
 
     public func difference(_ other: [Int]) -> Int {
@@ -141,18 +143,30 @@ class SpectralViewController: UIViewController {
 
     var audioInput: TempiAudioInput!
 
-    // Recorded in real life, 9/17/19
-    static let pattern = [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 17, 17, 17, 17, 17,
-                          16, 16, 16, 16, 33, 33, 33, 33, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
-                          12, 12, 12, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 11, 11, 11, 11, 11, 11,
-                          12, 12, 12, 33, 33, 33, 33, 7, 7, 7, 7, 7, 9, 9, 9, 9, 11, 11, 11, 11, 11,
-                          9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
-                          12, 12, 12, 12, 12, 12, 12, 12, 12, 3, 12, 12, 12, 12, 12, 12, 17, 17, 17,
-                          2, 6, 16, 16, 16, 16, 33, 33, 33, 33, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+    // Recorded in real live, 10/2/19 — new washer
+    static let pattern = [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 17, 17, 17, 17, 16, 2,
+                          0, 16, 16, 33, 33, 33, 13, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+                          9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 11, 10, 10, 11, 10, 12, 12, 12,
+                          12, 14, 33, 33, 7, 7, 7, 7, 7, 9, 9, 9, 9, 11, 10, 10, 10, 9, 10, 9, 9, 9,
+                          9, 9, 9, 9, 9, 9, 9, 9, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+                          12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 17, 17, 17, 17,
+                          17, 16, 16, 16, 16, 14, 14, 14, 14, 12, 12, 12, 12, 12, 12, 12, 12, 12,
                           12, 12, 12, 12, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-                          17, 17, 17, 17, 19, 19, 19, 19, 17, 17, 17, 17, 16, 16, 16, 16, 16, 33,
-                          33, 33, 33, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-                          17, 17, 17, 17, 17, 17]
+                          17, 17, 17, 17, 19, 19, 19, 17, 17, 17, 17, 17, 16, 16, 16, 16, 2, 1, 2,
+                          1, 2, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                          17, 17, 17, 17, 17]
+    // Recorded in real life, 9/17/19 — old washer
+//    static let pattern = [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 17, 17, 17, 17, 17,
+//                          16, 16, 16, 16, 33, 33, 33, 33, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+//                          12, 12, 12, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 11, 11, 11, 11, 11, 11,
+//                          12, 12, 12, 33, 33, 33, 33, 7, 7, 7, 7, 7, 9, 9, 9, 9, 11, 11, 11, 11, 11,
+//                          9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+//                          12, 12, 12, 12, 12, 12, 12, 12, 12, 3, 12, 12, 12, 12, 12, 12, 17, 17, 17,
+//                          2, 6, 16, 16, 16, 16, 33, 33, 33, 33, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+//                          12, 12, 12, 12, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+//                          17, 17, 17, 17, 19, 19, 19, 19, 17, 17, 17, 17, 16, 16, 16, 16, 16, 33,
+//                          33, 33, 33, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+//                          17, 17, 17, 17, 17, 17]
 
     // Captured from https://www.youtube.com/watch?v=clHpyRzb1PI
     /*
@@ -191,21 +205,44 @@ class SpectralViewController: UIViewController {
         }
     }
 
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.tap(nil)
+    }
+
+    let c0 = Float(16.3125)
+    let lowestOctave = 6
+    let highestOctave = 10
+
     private func performAnalysis(_ samples: [Float]) {
         let fft = TempiFFT(withSize: samples.count, sampleRate: sampleRate)
         fft.windowType = TempiFFTWindowType.hanning
         fft.fftForward(samples)
 
-        let c0 = Float(16.3125)
-        let lowestOctave = 6
-        let highestOctave = 10
         fft.calculateLogarithmicBands(minFrequency: c0 * Float(pow(2.0, Float(lowestOctave))),
                                       maxFrequency: c0 * Float(pow(2.0, Float(highestOctave))),
                                       bandsPerOctave: 12)
         recorder.append(fft.dominantBand)
-        if recorder.matches(SpectralViewController.pattern) {
+        if let max = samples.max(), max < 0.02 {
+            spectralView.note = ""
+        } else {
+            spectralView.note = name(fft.dominantBand + 12*4 + 9)
+        }
+        let (found, score) = recorder.matches(SpectralViewController.pattern)
+        spectralView.addScore(score)
+        spectralView.acceptableScore = recorder.acceptableScore
+        if found {
             patternFound()
         }
+    }
+
+    func name(_ band: Int) -> String {
+        let notes = ["c", "c", "d", "d", "e", "f", "f", "g", "g", "a", "a", "b"]
+        let sharps = ["", "#", "", "#", "", "", "#", "", "#", "", "#", ""]
+        let i = band % notes.count
+        let note = notes[i]
+        let sharp = sharps[i]
+        let octave = band / 12
+        return "\(note)\(octave)\(sharp)"
     }
 
     private func handleChunk(_ samples: [Float]) {
@@ -221,8 +258,9 @@ class SpectralViewController: UIViewController {
 
         performAnalysis(samples)
 
-//        self.spectralView.fft = fft
-//        self.spectralView.setNeedsDisplay()
+        self.spectralView.fft = fft
+        self.spectralView.numberOfBands = 480
+        self.spectralView.setNeedsDisplay()
     }
 
     override func viewDidLoad() {

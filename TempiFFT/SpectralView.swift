@@ -11,6 +11,19 @@ import UIKit
 class SpectralView: UIView {
 
     var fft: TempiFFT!
+    var numberOfBands: Int? = nil
+    var scores: [Int] = []
+    var acceptableScore = 80
+    let maxScores = 100
+    var note: String = ""
+
+    func addScore(_ score: Int) {
+        scores.append(score)
+        if scores.count > maxScores {
+            scores.removeFirst()
+        }
+        setNeedsDisplay()
+    }
 
     override func draw(_ rect: CGRect) {
         
@@ -19,14 +32,60 @@ class SpectralView: UIView {
         }
         
         let context = UIGraphicsGetCurrentContext()
-        
+
+        drawScores(context: context!)
         self.drawSpectrum(context: context!)
-        
+        drawNote(context: context!)
+
         // We're drawing static labels every time through our drawRect() which is a waste.
         // If this were more than a demo we'd take care to only draw them once.
         self.drawLabels(context: context!)
     }
-    
+
+    private func drawNote(context: CGContext) {
+        let rect = CGRect(x: 0, y: 0, width: 32, height: 32)
+        context.setFillColor(UIColor.black.cgColor)
+        context.fill(rect)
+
+        context.setStrokeColor(UIColor.white.cgColor)
+        let attributedString = NSAttributedString(string: note, attributes: [.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 32)])
+        attributedString.draw(at: rect.origin)
+    }
+
+    private func drawScores(context: CGContext) {
+        context.setFillColor(UIColor.black.cgColor)
+        let height = bounds.height / 3.0
+        let yOrigin = 0.0
+        let maxScore = 160.0
+
+        // Background
+        context.fill(CGRect(x: 0,
+                            y: yOrigin,
+                            width: bounds.width,
+                            height: height))
+
+        // Threshold line
+        let y = CGFloat(acceptableScore) * height / maxScore
+        context.setFillColor(UIColor.blue.cgColor)
+        context.fill(CGRect(x: 0,
+                            y: y + yOrigin,
+                            width: bounds.width,
+                            height: 1))
+
+        // Box for each score
+        let stride = round(bounds.width / CGFloat(maxScores))
+        var x = 0.0
+        for score in scores {
+            let y = CGFloat(score) * height / maxScore
+            context.setFillColor(UIColor.white.cgColor)
+            context.fill(CGRect(x: x,
+                                y: y + yOrigin,
+                                width: stride,
+                                height: 5))
+            x += stride
+        }
+    }
+
     private func drawSpectrum(context: CGContext) {
         let viewWidth = self.bounds.size.width
         let viewHeight = self.bounds.size.height
@@ -44,7 +103,7 @@ class SpectralView: UIView {
         
         var x: CGFloat = 0.0
         
-        let count = fft.numberOfBands
+        let count = numberOfBands ?? fft.numberOfBands
         
         // Draw the spectrum.
         let maxDB: Float = 64.0
@@ -97,10 +156,17 @@ class SpectralView: UIView {
         
         var x: CGFloat = viewWidth / 2.0 - attrStr.size().width / 2.0
         attrStr.draw(at: CGPoint(x: x, y: -22))
-        
-        let labelStrings: [String] = ["5", "10", "15", "20"]
-        let labelValues: [CGFloat] = [5000, 10000, 15000, 20000]
-        let samplesPerPixel: CGFloat = CGFloat(fft.sampleRate) / 2.0 / viewWidth
+
+        let range = 1...10
+        let labelStrings: [String] = range.map { String($0) }
+        let labelValues: [CGFloat] = range.map { CGFloat($0 * 1000) }
+        let highestDisplayedFrequency: CGFloat
+        if let numberOfBands = numberOfBands {
+            highestDisplayedFrequency = CGFloat(fft.frequencyAtBand(numberOfBands))
+        } else {
+            highestDisplayedFrequency = CGFloat(fft.sampleRate) / 2.0
+        }
+        let samplesPerPixel: CGFloat = highestDisplayedFrequency / viewWidth
         for i in 0..<labelStrings.count {
             let str = labelStrings[i]
             let freq = labelValues[i]

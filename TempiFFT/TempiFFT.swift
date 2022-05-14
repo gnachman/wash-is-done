@@ -84,8 +84,7 @@ import Accelerate
     private var window:[Float] = []
     private var fftSetup:FFTSetup
     private var hasPerformedFFT: Bool = false
-    private var complexBuffer: DSPSplitComplex!
-    
+
     /// Instantiate the FFT.
     /// - Parameter withSize: The length of the sample buffer we'll be analyzing. Must be a power of 2. The resulting ```magnitudes``` are of length ```inSize/2```.
     /// - Parameter sampleRate: Sampling rate of the provided audio data.
@@ -106,12 +105,8 @@ import Accelerate
         self.log2Size = Int(log2f(sizeFloat))
         self.fftSetup = vDSP_create_fftsetup(UInt(log2Size), FFTRadix(FFT_RADIX2))!
         
-        // Init the complexBuffer
-        var real = [Float](repeating: 0.0, count: self.halfSize)
-        var imaginary = [Float](repeating: 0.0, count: self.halfSize)
-        self.complexBuffer = DSPSplitComplex(realp: &real, imagp: &imaginary)
     }
-    
+
     deinit {
         // destroy the fft setup object
         vDSP_destroy_fftsetup(fftSetup)
@@ -160,23 +155,18 @@ import Accelerate
                 imags.append(element)
             }
         }
-        self.complexBuffer = DSPSplitComplex(realp: UnsafeMutablePointer(mutating: reals), imagp: UnsafeMutablePointer(mutating: imags))
-        
-        // This compiles without error but doesn't actually work. It results in garbage values being stored to the complexBuffer's real and imag parts. Why? The above workaround is undoubtedly tons slower so it would be good to get vDSP_ctoz working again.
-//        withUnsafePointer(to: &analysisBuffer, { $0.withMemoryRebound(to: DSPComplex.self, capacity: analysisBuffer.count) {
-//            vDSP_ctoz($0, 2, &(self.complexBuffer!), 1, UInt(self.halfSize))
-//            }
-//        })
-        // Verifying garbage values.
-//        let rFloats = [Float](UnsafeBufferPointer(start: self.complexBuffer.realp, count: self.halfSize))
-//        let iFloats = [Float](UnsafeBufferPointer(start: self.complexBuffer.imagp, count: self.halfSize))
-        
-        // Perform a forward FFT
-        vDSP_fft_zrip(self.fftSetup, &(self.complexBuffer!), 1, UInt(self.log2Size), Int32(FFT_FORWARD))
-        
-        // Store and square (for better visualization & conversion to db) the magnitudes
-        self.magnitudes = [Float](repeating: 0.0, count: self.halfSize)
-        vDSP_zvmags(&(self.complexBuffer!), 1, &self.magnitudes, 1, UInt(self.halfSize))
+        reals.withUnsafeMutableBufferPointer { realPtr in
+            imags.withUnsafeMutableBufferPointer { imgPtr in
+                var complexBuffer = DSPSplitComplex(realp: realPtr.baseAddress!,
+                                                    imagp: imgPtr.baseAddress!)
+                // Perform a forward FFT
+                vDSP_fft_zrip(self.fftSetup, &complexBuffer, 1, UInt(self.log2Size), Int32(FFT_FORWARD))
+
+                // Store and square (for better visualization & conversion to db) the magnitudes
+                self.magnitudes = [Float](repeating: 0.0, count: self.halfSize)
+                vDSP_zvmags(&complexBuffer, 1, &self.magnitudes, 1, UInt(self.halfSize))
+            }
+        }
         
         self.hasPerformedFFT = true
     }
@@ -277,9 +267,12 @@ import Accelerate
     // On arrays of 1024 elements, this is ~35x faster than an iterational algorithm. Thanks Accelerate.framework!
     @inline(__always) private func fastAverage(_ array:[Float], _ startIdx: Int, _ stopIdx: Int) -> Float {
         var mean: Float = 0
-        let ptr = UnsafePointer<Float>(array)
-        vDSP_meanv(ptr + startIdx, 1, &mean, UInt(stopIdx - startIdx))
-        
+        array.withUnsafeBufferPointer { bufferPointer in
+            vDSP_meanv(bufferPointer.baseAddress! + startIdx, 1,
+                       &mean,
+                       UInt(stopIdx - startIdx))
+        }
+
         return mean
     }
     
